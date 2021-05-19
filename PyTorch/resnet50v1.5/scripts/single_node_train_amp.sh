@@ -23,21 +23,17 @@ LOG_FOLDER=/log/${NUM_NODES}n${NUM_GPUS}g
 mkdir -p $LOG_FOLDER
 LOGFILE=${LOG_FOLDER}/r50_b${bz_per_device}_fp32_$TEST_TIMES.log
 
-CMD="$WORKSPACE/main.py"
+CMD="$WORKSPACE/main_amp.py"
 CMD+=" --arch $MODEL"
-CMD+=" --epochs 1"
+CMD+=" --epochs 100"
 CMD+=" --batch-size $total_bz"
 CMD+=" --lr $LR --workers 10"
 CMD+=" --momentum 0.125"
 CMD+=" --print-freq 1"
-CMD+=" --multiprocessing-distributed"
-CMD+=" --dist-backend  nccl"
-CMD+=" --dist-url  tcp://${master_node}"
-CMD+=" --world-size ${NUM_NODES}"
-CMD+=" --rank 0"
+CMD+=" --opt-level O0"
 
 #CMD=" python -m torch.distributed.launch $CMD $DATA_DIR "
-CMD=" python $CMD $DATA_DIR "
+CMD=" python -m torch.distributed.launch --nproc_per_node=${NUM_GPUS} $CMD $DATA_DIR"
 
 if [ -z "$LOGFILE" ] ; then
    $CMD
